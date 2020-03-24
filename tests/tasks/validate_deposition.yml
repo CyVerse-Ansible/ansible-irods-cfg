@@ -9,6 +9,7 @@
     or response.stat.gr_name != 'irods'
 
 - name: download {{ schema }} schema
+  when: local_schema_file is defined and local_schema_file | bool
   get_url:
     url: https://schemas.irods.org/configuration/v2/{{ schema }}
     dest: "{{ ansible_env.HOME }}"

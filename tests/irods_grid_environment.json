@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#", 
+    "id": "irods_grid_environment.json#", 
+    "properties": {
+        "irods_server_control_plane_key": {
+            "type": "string"
+        }, 
+        "irods_server_control_plane_port": {
+            "type": "integer"
+        }, 
+        "irods_server_control_plane_encryption_algorithm": {
+            "type": "string"
+        }, 
+        "irods_server_control_plane_encryption_num_hash_rounds": {
+            "type": "integer"
+        }
+    }, 
+    "required": [
+        "irods_server_control_plane_key",
+        "irods_server_control_plane_port",
+        "irods_server_control_plane_encryption_algorithm",
+        "irods_server_control_plane_encryption_num_hash_rounds"
+    ], 
+    "type": "object"
+}

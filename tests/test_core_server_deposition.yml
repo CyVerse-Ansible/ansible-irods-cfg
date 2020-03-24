@@ -40,6 +40,12 @@
         cfg_path: /var/lib/irods/.irods/irods_environment.json
         schema: service_account_environment.json
 
+    - include_tasks: tasks/validate_deposition.yml
+      vars:
+        cfg_path: /var/lib/irods/.irods/irods_environment.json
+        schema: ansible-irods-cfg/test/irods_grid_environment.json
+        local_schema_file: yes
+
     - name: check service_account.config deposition
       stat:
         path: /etc/irods/service_account.config
