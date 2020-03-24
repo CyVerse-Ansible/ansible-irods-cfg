@@ -13,9 +13,10 @@
   get_url:
     url: https://schemas.irods.org/configuration/v2/{{ schema }}
     dest: "{{ ansible_env.HOME }}"
+  register: download_schema
 
 - name: validate {{ cfg_path }} with schema
   shell: |
     /home/travis/virtualenv/python2.7.13/bin/jsonschema --instance {{ cfg_path }} \
-      {{ ansible_env.HOME }}/{{ schema }}
+      {{ schema if local_schema_file is defined and local_schema_file | bool else download_schema.dest }}
   changed_when: false
