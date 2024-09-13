@@ -1,13 +1,12 @@
 ---
-- name: verify | irods
+- name: Verify | irods
   hosts: all
   become: true
   become_user: irods
-  collections:
-    - ansible.builtin
-    - community.postgresql
+  become_flags: '-i'
   tasks:
-    - include_tasks: ../_shared/tasks/validate_deposition.yml
+    - name: Validate deposition /etc/irods
+      ansible.builtin.include_tasks: ../_shared/tasks/validate_deposition.yml
       vars:
         cfg_path: /etc/irods/{{ item }}
         schema_path: /var/lib/irods/configuration_schemas/v3/{{ item }}
@@ -16,19 +15,20 @@
         - hosts_config.json
         - server_config.json
 
-    - name: verify that database_config.json was not deposited
-      stat:
+    - name: Verify that database_config.json was not deposited
+      ansible.builtin.stat:
         path: /etc/irods/database_config.json
       register: response
       failed_when: response.stat.exists
 
-    - include_tasks: ../_shared/tasks/validate_deposition.yml
+    - name: Validate deposition of irods_environment.json
+      ansible.builtin.include_tasks: ../_shared/tasks/validate_deposition.yml
       vars:
         cfg_path: /var/lib/irods/.irods/irods_environment.json
         schema_path: /var/lib/irods/configuration_schemas/v3/service_account_environment.json
 
-    - name: check service_account.config deposition
-      stat:
+    - name: Check service_account.config deposition
+      ansible.builtin.stat:
         path: /etc/irods/service_account.config
       register: response
       failed_when: >
@@ -36,8 +36,8 @@
         response.stat.pw_name != 'irods' or
         response.stat.gr_name != 'irods'
 
-    - name: verify ICAT schema version
-      postgresql_query:
+    - name: Verify ICAT schema version
+      community.postgresql.postgresql_query:
         db: ICAT
         login_user: irods
         login_password: testpassword
@@ -48,8 +48,8 @@
       register: response
       failed_when: response.failed or response.query_result[0]['option_value'] != '7'
 
-    - name: verify admin password set
-      postgresql_query:
+    - name: Verify admin password set
+      community.postgresql.postgresql_query:
         db: ICAT
         login_user: irods
         login_password: testpassword

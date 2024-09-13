@@ -2,7 +2,7 @@
 #   cfg_path: The absolute path to the configuration file to be validated
 #   schema_path: The absolute path to the schema file used for validation
 ---
-- name: check {{ cfg_path }} deposition
+- name: Check deposition {{ cfg_path }}
   ansible.builtin.stat:
     path: "{{ cfg_path }}"
   register: response
@@ -11,9 +11,8 @@
     or response.stat.pw_name != 'irods'
     or response.stat.gr_name != 'irods'
 
-- name: validate {{ cfg_path }} with schema
-  ansible.builtin.command: >
-    jsonschema --instance '{{ cfg_path }}' '{{ schema_path }}'
+- name: Validate with schema {{ cfg_path }}
+  ansible.builtin.command: /usr/local/bin/jsonschema --instance '{{ cfg_path }}' '{{ schema_path }}'
   register: response
   until: response.stderr is not search('Connection timed out')
   retries: 10

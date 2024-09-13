@@ -4,10 +4,12 @@
 
 - name: Prepare | provider
   hosts: centos
-  become: true
-  collections:
-    - community.general
   tasks:
+    - name: Install sudo
+      ansible.builtin.package:
+        name: sudo
+        state: present
+
     - name: CentOS | install yum_versionlock requirements
       ansible.builtin.package:
         name:
@@ -37,7 +39,7 @@
       changed_when: response.stdout == 'changed'
 
     - name: CentOS | lock irods packages to required version
-      yum_versionlock:
+      community.general.yum_versionlock:
         name:
           - irods-icommands-4.2.8
           - irods-database-plugin-postgres-4.2.8
@@ -66,9 +68,10 @@
 
     - name: CentOS | install prerequisites for psycopg2
       ansible.builtin.yum:
-        name: 
+        name:
           - "@Development tools"
           - postgresql-devel
+          - python3-devel
         state: present
 
 
@@ -80,10 +83,12 @@
   gather_facts: false
   tasks:
     - name: CentOS | initialize PostgreSQL database cluster
-      ansible.builtin.shell: |
-        if [[ -e "$PGDATA" ]] && [[ -z "$(ls --almost-all "$PGDATA")" ]]; then
-          initdb --pgdata="$PGDATA" --auth=ident
-        fi
+      ansible.builtin.shell:
+        executable: /bin/bash
+        cmd: |
+          if [[ -e "$PGDATA" ]] && [[ -z "$(ls --almost-all "$PGDATA")" ]]; then
+            initdb --pgdata="$PGDATA" --auth=ident
+          fi
       register: response
       changed_when: response.stdout != ''
 
@@ -94,17 +99,19 @@
         mode: u+r
 
     - name: CentOS | start PostgreSQL
-      ansible.builtin.shell: |
-        set -o errexit
-        if ! [[ -e "$PGDATA"/postmaster.pid ]]; then
-          pg_ctl start > /dev/null
-          echo changed
-        fi
+      ansible.builtin.shell:
+        executable: /bin/bash
+        cmd: |
+          set -o errexit
+          if ! [[ -e "$PGDATA"/postmaster.pid ]]; then
+            pg_ctl start > /dev/null
+            echo changed
+          fi
       register: response
       changed_when: response.stdout == 'changed'
 
 
-- name: prepare | provider
+- name: Prepare | provider
   hosts: ubuntu
   tasks:
     - name: Ubuntu | install apt_key prerequisites
@@ -141,7 +148,7 @@
         name: postgresql
         state: present
 
-    - name: Ubuntu | start PostgreSQL 
+    - name: Ubuntu | start PostgreSQL
       ansible.builtin.service:
         name: postgresql
         state: started
@@ -153,21 +160,19 @@
         state: present
 
 
-- name: prepare | provider
+- name: Prepare | provider
   hosts: all
   gather_facts: false
   tasks:
-    - name: Install prerequisites for psycopg2
-      ansible.builtin.pip:
-        name: wheel
-
     - name: Install postgresql module prerequisites
       ansible.builtin.pip:
-        name: psycopg2
+        name:
+          - ipaddress
+          - psycopg2-binary
 
     - name: Install iRODS server
       ansible.builtin.package:
-        name: 
+        name:
           - irods-database-plugin-postgres
           - irods-server
         state: present
@@ -179,26 +184,26 @@
   become_user: postgres
   become_flags: '-i'
   gather_facts: false
-  collections:
-    - community.postgresql
   tasks:
     - name: Create ICAT DB
-      postgresql_db:
+      community.postgresql.postgresql_db:
         name: ICAT
 
     - name: Create iRODS user
-      postgresql_user:
-        db: ICAT
+      community.postgresql.postgresql_user:
         name: irods
         password: testpassword
-        priv: ALL
 
-    - name: Ensure postgres_pg_hba prerequisites are installed
-      ansible.builtin.pip:
-        name: ipaddress
+    - name: Grant iRODS user full access to ICAT DB
+      community.postgresql.postgresql_privs:
+        db: postgres
+        privs: ALL
+        type: database
+        obj: ICAT
+        roles: irods
 
     - name: Configure irods user ICAT access
-      postgresql_pg_hba:
+      community.postgresql.postgresql_pg_hba:
         dest: "{{ pg_hba_path }}"
         contype: host
         users: irods
@@ -208,11 +213,26 @@
         state: present
       notify: Reload postgres, {{ inventory_hostname }}
 
+    - name: Remove ident access to DBMS
+      community.postgresql.postgresql_pg_hba:
+        dest: "{{ pg_hba_path }}"
+        contype: host
+        users: all
+        source: "{{ item }}"
+        databases: all
+        method: md5
+        state: present
+      loop:
+        - 127.0.0.1/32
+        - ::1/128
+      notify: Reload postgres, {{ inventory_hostname }}
+
   handlers:
     - name: Reload postgres, centos
-      command: pg_ctl reload
+      ansible.builtin.command: pg_ctl reload
+      changed_when: true
 
     - name: Reload postgres, ubuntu
-      service:
+      ansible.builtin.service:
         name: postgresql
         state: reloaded

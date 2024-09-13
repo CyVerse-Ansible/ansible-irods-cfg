@@ -24,11 +24,13 @@
 
     - name: Initialize ICAT schema
       when: not odbc.stat.exists
-      ansible.builtin.shell: |
-        set -e
-        python /var/lib/irods/scripts/setup_irods.py \
-          --json_configuration_file=/tmp/setup_configuration.json
-        rm --force /tmp/setup_configuration.json || true
+      ansible.builtin.shell:
+        executable: /bin/bash
+        cmd: |
+          set -o errexit
+          python /var/lib/irods/scripts/setup_irods.py \
+            --json_configuration_file=/tmp/setup_configuration.json
+          rm --force /tmp/setup_configuration.json || true
       register: response
       failed_when:
         - not response.stderr is search('Database specified already in use by iRODS')
@@ -39,6 +41,9 @@
       ansible.builtin.file:
         path: "{{ _root_dir }}/var/lib/irods/.odbc.ini"
         state: absent
+
+    - name: Fail
+      ansible.builtin.fail:
 
 - name: Setup iRODS | configure server
   ansible.builtin.import_tasks: server.yml
