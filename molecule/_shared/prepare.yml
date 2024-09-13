@@ -7,40 +7,13 @@
         name: epel-release
         state: present
 
-    - name: CentOS | install pip module prerequisites
-      ansible.builtin.package:
-        name: python-pip
-        state: present
-
-    - name: CentOS | get pip version
-      ansible.builtin.shell:
-        executable: /bin/bash
-        cmd: |
-          set -o pipefail
-          pip --version | cut --delimiter=' ' --fields=2
-      register: ver_response
-      changed_when: false
-
-    - name: CentOS | update pip to 9
-      when: ver_response.stdout is version_compare('9.0.3', '<')
-      ansible.builtin.pip:
-        name: 'pip==9.0.3'
-        extra_args: '--upgrade'
-
-    - name: CentOS | update pip to 20
-      when: ver_response.stdout is version_compare('20.3.4', '<')
-      ansible.builtin.pip:
-        name: 'pip==20.3.4'
-        extra_args: '--upgrade'
-
 
 - name: Prepare | Ubuntu base
   hosts: ubuntu
   tasks:
-    - name: Ubuntu | install pip
+    - name: Ubuntu | update apt cache
       ansible.builtin.apt:
         update_cache: true
-        name: python3-pip
 
 
 - name: Prepare | base
@@ -51,6 +24,11 @@
       ansible.builtin.package:
         name: ca-certificates
         state: latest  # noqa package-latest
+
+    - name: Install pip
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
 
     - name: Install setuptools
       ansible.builtin.pip:

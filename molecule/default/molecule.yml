@@ -1,2 +1,1 @@
 ---
-lint: sh -c 'yamllint . && ansible-lint .'

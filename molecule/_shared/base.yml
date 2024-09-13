@@ -7,7 +7,9 @@ driver:
   name: docker
 platforms:
   - name: centos
-    image: centos:7
+    image: centos-archive
+    pre_build_image: false
+    dockerfile: ../_shared/centos.dockerfile
     hostname: centos.localdomain
   - name: ubuntu
     image: ubuntu:bionic
@@ -20,6 +22,7 @@ provisioner:
         irods_cfg_validate: true
     host_vars:
       centos:
+        ansible_python_interpreter: /usr/bin/python3
         irods_cfg_icat:
           db_password: testpassword
           db_username: irods
