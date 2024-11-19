@@ -3,7 +3,7 @@
   ansible.builtin.import_playbook: ../_shared/prepare.yml
 
 
-- name: Prepare | CentOS provider
+- name: Prepare | CentOS initialize
   hosts: centos.localdomain
   tasks:
     - name: CentOS | install epel repo
@@ -81,7 +81,7 @@
         name: pyodbc
 
 
-- name: Prepare | CentOS provider DBMS
+- name: Prepare | CentOS initialize DBMS
   hosts: centos.localdomain
   become: true
   become_user: postgres
@@ -117,7 +117,7 @@
       changed_when: response.stdout == 'changed'
 
 
-- name: Prepare | Ubuntu provider
+- name: Prepare | Ubuntu initialize
   hosts: ubuntu.localdomain
   tasks:
     - name: Ubuntu | install iRODS package repository signing key
@@ -161,7 +161,7 @@
         state: present
 
 
-- name: Prepare | provider
+- name: Prepare | initialize
   hosts: all
   gather_facts: false
   tasks:
@@ -179,7 +179,7 @@
         state: present
 
 
-- name: Prepare | provider DBMS
+- name: Prepare | initialize DBMS
   hosts: all
   become: true
   become_user: postgres

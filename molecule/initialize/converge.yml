@@ -1,5 +1,5 @@
 ---
-- name: Converge | provider
+- name: Converge | initialize
   hosts: all
   tasks:
     - name: Place setup_configuration.json
