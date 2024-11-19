@@ -7,13 +7,12 @@
         path: "{{ _root_dir }}/var/lib/irods/.odbc.ini"
       register: odbc
 
-    - name: Load vars for chosen database type
-      when: not odbc.stat.exists
-      ansible.builtin.include_vars: "{{ _icat.catalog_database_type }}.yml"
-
     - name: Load variable values
       when: not odbc.stat.exists
-      ansible.builtin.include_vars: irods_environment_server.yml
+      ansible.builtin.include_vars: "{{ item }}"
+      loop:
+        - server_config.yml
+        - irods_environment_server.yml
 
     - name: Create setup configuration file
       when: not odbc.stat.exists
@@ -28,14 +27,11 @@
         executable: /bin/bash
         cmd: |
           set -o errexit
-          python /var/lib/irods/scripts/setup_irods.py \
+          python3 /var/lib/irods/scripts/setup_irods.py --stdout --test --verbose \
             --json_configuration_file=/tmp/setup_configuration.json
-          rm --force /tmp/setup_configuration.json || true
+          rm --force /var/lib/irods/log/test_mode_output.log /tmp/setup_configuration.json || true
       register: response
-      failed_when:
-        - not response.stderr is search('Database specified already in use by iRODS')
-        - not response.stdout is search('Attempting test put')
-      changed_when: not response.stderr is search('Database specified already in use by iRODS')
+      changed_when: response.stdout is search('Updating to schema version')
   rescue:
     - name: Ensure .odbc.ini missing on failure
       ansible.builtin.file:

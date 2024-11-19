@@ -1,15 +1,6 @@
 ---
-- name: Prepare | CentOS base
-  hosts: centos
-  tasks:
-    - name: CentOS | install epel repo
-      ansible.builtin.package:
-        name: epel-release
-        state: present
-
-
 - name: Prepare | Ubuntu base
-  hosts: ubuntu
+  hosts: ubuntu.localdomain
   tasks:
     - name: Ubuntu | update apt cache
       ansible.builtin.apt:
@@ -20,25 +11,11 @@
   hosts: all
   gather_facts: false
   tasks:
-    - name: Update ca-certificates
-      ansible.builtin.package:
-        name: ca-certificates
-        state: latest  # noqa package-latest
-
     - name: Install pip
       ansible.builtin.package:
         name: python3-pip
         state: present
 
-    - name: Install setuptools
-      ansible.builtin.pip:
-        name: setuptools
-
     - name: Install jsonschema
       ansible.builtin.pip:
         name: jsonschema
-
-    - name: Create irods user
-      ansible.builtin.user:
-        name: irods
-        home: /var/lib/irods

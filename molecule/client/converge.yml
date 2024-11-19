@@ -1,15 +1,16 @@
 ---
-- name: converge | client deposition
+- name: Converge | client deposition
   hosts: all
   gather_facts: false
   tasks:
-    - name: place default client env file
-      import_role:
+    - name: Place default client env file
+      ansible.builtin.import_role:
         name: ansible-irods-cfg
         tasks_from: client.yml
+      tags: skip_ansible_lint
 
-    - name: place custom client env file
-      include_role:
+    - name: Place custom client env file
+      ansible.builtin.include_role:
         name: ansible-irods-cfg
         tasks_from: client.yml
       vars:

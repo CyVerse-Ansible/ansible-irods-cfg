@@ -2,8 +2,8 @@
 {% if _authentication_file %}
     "irods_authentication_file": "{{ _authentication_file }}",
 {% endif %}
-{% if _zone_auth_scheme %}
-    "irods_authentication_scheme": "{{ _zone_auth_scheme }}",
+{% if _client_authentication_scheme %}
+    "irods_authentication_scheme": "{{ _client_authentication_scheme }}",
 {% endif %}
 {% if _client_server_negotiation %}
     "irods_client_server_negotiation": "{{ _client_server_negotiation }}",
@@ -14,7 +14,7 @@
 {% if _connection_pool_refresh_time %}
     "irods_connection_pool_refresh_time_in_seconds": {{ _connection_pool_refresh_time }},
 {% endif %}
-{% if _cwd %}
+{% if not _cwd.startswith('__omit_place_holder__') %}
     "irods_cwd": "{{ _cwd }}",
 {% endif %}
 {% if _debug %}
@@ -23,17 +23,20 @@
 {% if _client_default_hash_scheme %}
     "irods_default_hash_scheme": "{{ _client_default_hash_scheme }}",
 {% endif %}
+{% if _default_number_of_transfer_threads %}
+    "irods_default_number_of_transfer_threads": {{ _default_number_of_transfer_threads }},
+{% endif %}
 {% if _client_default_resource %}
     "irods_default_resource": "{{ _client_default_resource }}",
 {% endif %}
 {% if _client_encryption_algorithm %}
     "irods_encryption_algorithm": "{{ _client_encryption_algorithm }}",
 {% endif %}
-{% if _client_encryption_num_hash_rounds %}
-    "irods_encryption_num_hash_rounds": {{ _client_encryption_num_hash_rounds }},
-{% endif %}
 {% if _client_encryption_key_size %}
     "irods_encryption_key_size": {{ _client_encryption_key_size }},
+{% endif %}
+{% if _client_encryption_num_hash_rounds %}
+    "irods_encryption_num_hash_rounds": {{ _client_encryption_num_hash_rounds }},
 {% endif %}
 {% if _client_encryption_salt_size %}
     "irods_encryption_salt_size": {{ _client_encryption_salt_size }},
@@ -41,26 +44,35 @@
 {% if _gsi_server_dn %}
     "irods_gsi_server_dn": "{{ _gsi_server_dn }}",
 {% endif %}
-{% if _home %}
+{% if not _home.startswith('__omit_place_holder__') %}
     "irods_home": "{{ _home }}",
 {% endif %}
     "irods_host": "{{ _host }}",
-{% if _log_level %}
-    "irods_log_level": {{ _log_level }},
+{% if _client_log_level %}
+    "irods_log_level": {{ _client_log_level }},
 {% endif %}
 {% if _match_hash_policy %}
     "irods_match_hash_policy": "{{ _match_hash_policy }}",
+{% endif %}
+{% if _maximum_size_for_single_buffer %}
+    "irods_maximum_size_for_single_buffer_in_megabytes": {{ _maximum_size_for_single_buffer }},
 {% endif %}
 {% if _plugins_home %}
     "irods_plugins_home": "{{ _plugins_home }}",
 {% endif %}
     "irods_port": {{ _zone_port }},
-{% if _for_server %}
+{% if _server_control_plane_encryption_algorithm %}
     "irods_server_control_plane_encryption_algorithm": "{{
         _server_control_plane_encryption_algorithm }}",
+{% endif %}
+{% if _server_control_plane_encryption_num_hash_rounds %}
     "irods_server_control_plane_encryption_num_hash_rounds": {{
         _server_control_plane_encryption_num_hash_rounds }},
+{% endif %}
+{% if _server_control_plane_key %}
     "irods_server_control_plane_key": "{{ _server_control_plane_key }}",
+{% endif %}
+{% if _server_control_plane_port %}
     "irods_server_control_plane_port": {{ _server_control_plane_port }},
 {% endif %}
 {% if _ssl_ca_certificate_file %}
@@ -81,14 +93,23 @@
 {% if _ssl_verify_server %}
     "irods_ssl_verify_server": "{{ _ssl_verify_server }}",
 {% endif %}
+{% if _tcp_keepalive_intvl %}
+    "irods_tcp_keepalive_intvl_in_seconds": {{ _tcp_keepalive_intvl }},
+{% endif %}
+{% if _tcp_keepalive_probes %}
+    "irods_tcp_keepalive_probes": {{ _tcp_keepalive_probes }},
+{% endif %}
+{% if _tcp_keepalive_time %}
+    "irods_tcp_keepalive_time_in_seconds": {{ _tcp_keepalive_time }},
+{% endif %}
+{% if _transfer_buffer_size_for_parallel_transfer %}
+    "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes": {{
+        _transfer_buffer_size_for_parallel_transfer }},
+{% endif %}
     "irods_user_name": "{{ _zone_user }}",
-{% if _xmsg_host %}
-    "irods_xmsg_host": "{{ _xmsg_host }}",
+    "irods_zone_name": "{{ _zone_name }}"{% if _for_server %},{% endif %}
+{% if _for_server +%}
+    "schema_name": "service_account_environment",
+    "schema_version": "{{ _schema_version }}"
 {% endif %}
-{% if _client_xmsg_port %}
-    "irods_xmsg_port": {{ _client_xmsg_port }},
-{% endif %}
-    "irods_zone_name": "{{ _zone_name }}",
-    "schema_name": "{{ _environment_schema_name }}",
-    "schema_version": "v3"
 }

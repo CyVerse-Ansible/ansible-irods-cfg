@@ -1,10 +1,16 @@
 ---
-- import_playbook: ../_shared/prepare.yml
+- name: Base | prepare
+  ansible.builtin.import_playbook: ../_shared/prepare.yml
 
 
-- name: Prepare | provider
-  hosts: centos
+- name: Prepare | CentOS provider
+  hosts: centos.localdomain
   tasks:
+    - name: CentOS | install epel repo
+      ansible.builtin.package:
+        name: epel-release
+        state: present
+
     - name: Install sudo
       ansible.builtin.package:
         name: sudo
@@ -41,21 +47,10 @@
     - name: CentOS | lock irods packages to required version
       community.general.yum_versionlock:
         name:
-          - irods-icommands-4.2.8
-          - irods-database-plugin-postgres-4.2.8
-          - irods-runtime-4.2.8
-          - irods-server-4.2.8
-        state: present
-
-    - name: CentOS | install OS specific required packages
-      ansible.builtin.package:
-        name: which
-        state: present
-
-      # TODO: When upgrading to iRODS 4.2.9+, remove this task.
-    - name: CentOS | ensure unixODBC is installed (irods issue 5389)
-      ansible.builtin.package:
-        name: unixODBC
+          - irods-icommands-4.3.1
+          - irods-database-plugin-postgres-4.3.1
+          - irods-runtime-4.3.1
+          - irods-server-4.3.1
         state: present
 
     - name: CentOS | install PostgreSQL server
@@ -74,9 +69,20 @@
           - python3-devel
         state: present
 
+    - name: CentOS | install prerequisites for pyodbc
+      ansible.builtin.package:
+        name:
+          - gcc
+          - gcc-c++
+          - unixODBC-devel
 
-- name: Prepare | provider
-  hosts: centos
+    - name: CentOS | install pyodbc
+      ansible.builtin.pip:
+        name: pyodbc
+
+
+- name: Prepare | CentOS provider DBMS
+  hosts: centos.localdomain
   become: true
   become_user: postgres
   become_flags: '-i'
@@ -111,14 +117,9 @@
       changed_when: response.stdout == 'changed'
 
 
-- name: Prepare | provider
-  hosts: ubuntu
+- name: Prepare | Ubuntu provider
+  hosts: ubuntu.localdomain
   tasks:
-    - name: Ubuntu | install apt_key prerequisites
-      ansible.builtin.package:
-        name: gpg
-        state: present
-
     - name: Ubuntu | install iRODS package repository signing key
       ansible.builtin.apt_key:
         url: https://packages.irods.org/irods-signing-key.asc
@@ -136,7 +137,7 @@
         mode: u+rw
         content: |
           Package: irods-*
-          Pin: version 4.2.8
+          Pin: version 4.3.1
           Pin-Priority: 1001
 
     - name: Ubuntu | update apt cache
@@ -178,7 +179,7 @@
         state: present
 
 
-- name: Prepare | provider
+- name: Prepare | provider DBMS
   hosts: all
   become: true
   become_user: postgres
@@ -228,11 +229,11 @@
       notify: Reload postgres, {{ inventory_hostname }}
 
   handlers:
-    - name: Reload postgres, centos
+    - name: Reload postgres, centos.localdomain
       ansible.builtin.command: pg_ctl reload
       changed_when: true
 
-    - name: Reload postgres, ubuntu
+    - name: Reload postgres, ubuntu.localdomain
       ansible.builtin.service:
         name: postgresql
         state: reloaded

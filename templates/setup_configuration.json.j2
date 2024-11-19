@@ -1,16 +1,13 @@
 {
+    "admin_password": "{{ _zone_password }}",
+{% if _default_resource_directory %}
+    "default_resource_directory": "{{ _default_resource_directory }}",
+{% endif %}
+    "default_resource_name": "{{ _default_resource_name }}",
     "host_system_information": {
         "service_account_user_name": "{{ _system_account_name }}",
         "service_account_group_name": "{{ _system_group_name }}"
     },
     "server_config": {% include 'server_config.json.j2' %},
-    "hosts_config": {% include 'hosts_config.json.j2' %},
-    "host_access_control_config": {% include 'host_access_control_config.json.j2' %},
-    "service_account_environment": {% include 'irods_environment.json.j2' %},
-    "admin_password": "{{ _zone_password }}",
-{% if _default_resource_directory %}
-    "default_resource_directory": "{{ _default_resource_directory }}"
-{% else %}
-    "default_resource_directory": null
-{% endif %}
+    "service_account_environment": {% include 'irods_environment.json.j2' %}
 }

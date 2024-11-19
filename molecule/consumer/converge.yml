@@ -1,5 +1,6 @@
 ---
-- name: converge
+- name: Converge
   hosts: all
+  tags: skip_ansible_lint
   roles:
     - role: ansible-irods-cfg

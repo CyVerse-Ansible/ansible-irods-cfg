@@ -1,25 +1,32 @@
 ---
-- import_playbook: ../_shared/prepare.yml
+- name: Base | prepare
+  ansible.builtin.import_playbook: ../_shared/prepare.yml
 
 
-- name: prepare
+- name: Prepare
   hosts: all
   gather_facts: false
-  collections:
-    - ansible.builtin
   tasks:
-    - name: create config directory
-      file:
+    - name: Create irods user
+      ansible.builtin.user:
+        name: irods
+        home: /var/lib/irods
+
+    - name: Create config directory
+      ansible.builtin.file:
         path: /etc/irods
         state: directory
         owner: irods
+        mode: u+rx
 
-    - name: create file to not receive ownership
-      file:
+    - name: Create file to not receive ownership
+      ansible.builtin.file:
         path: /etc/irods/not_owner_test
+        mode: u+r
         state: touch
 
-    - name: create file to receive ownership
-      file:
+    - name: Create file to receive ownership
+      ansible.builtin.file:
         path: /etc/irods/owner_test
+        mode: u+r
         state: touch

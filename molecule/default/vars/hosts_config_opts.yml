@@ -1,9 +1,0 @@
----
-irods_cfg_host_entries:
-  - address_type: local
-    addresses:
-      - my.host.com
-  - address_type: remote
-    addresses:
-      - other.host.com
-      - 1.2.3.4

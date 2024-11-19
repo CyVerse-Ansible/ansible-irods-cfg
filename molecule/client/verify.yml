@@ -1,12 +1,10 @@
 ---
-- name: verify | client configuration file placement
+- name: Verify | client configuration file placement
   hosts: all
   gather_facts: false
-  collections:
-    - ansible.builtin
   tasks:
-    - name: check irods_environment.json deposition
-      stat:
+    - name: Check irods_environment.json deposition
+      ansible.builtin.stat:
         path: /home/irods/.irods/irods_environment.json
       register: response
       failed_when: >-
@@ -14,14 +12,13 @@
         or response.stat.pw_name != 'irods'
         or response.stat.gr_name != 'irods'
 
-    - name: validate irods_environment.json with schema
-      command: >
-        jsonschema --instance /home/irods/.irods/irods_environment.json 
-          /var/lib/irods/client_environment.json
+    - name: Validate irods_environment.json with schema
+      ansible.builtin.command: >
+        jsonschema --instance /home/irods/.irods/irods_environment.json /client_environment.json.in
       changed_when: false
 
-    - name: check ie.json deposition
-      stat:
+    - name: Check ie.json deposition
+      ansible.builtin.stat:
         path: /tmp/ie.json
       register: response
       failed_when: >-
@@ -29,6 +26,6 @@
         or response.stat.pw_name == 'irods'
         or response.stat.gr_name == 'irods'
 
-    - name: validate ie.json with schema
-      command: jsonschema --instance /tmp/ie.json /var/lib/irods/client_environment.json
+    - name: Validate ie.json with schema
+      ansible.builtin.command: jsonschema --instance /tmp/ie.json /client_environment.json.in
       changed_when: false

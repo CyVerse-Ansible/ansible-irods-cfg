@@ -1,22 +1,52 @@
 ---
-- import_playbook: ../_shared/prepare.yml
+- name: Base | prepare
+  ansible.builtin.import_playbook: ../_shared/prepare.yml
 
 
-- name: prepare
+- name: Prepare
   hosts: all
-  collections:
-    - ansible.builtin
   tasks:
-    - name: download configuration schemas
-      get_url:
-        url: https://schemas.irods.org/configuration/v3/{{ item }}
-        dest: /var/lib/irods/
+    - name: Create irods service account
+      ansible.builtin.user:
+        name: irods
+        home: /var/lib/irods
+
+    - name: Create configuration schemas directory
+      ansible.builtin.file:
+        path: /var/lib/irods/configuration_schemas/v4
+        state: directory
+        recurse: true
+        mode: u+rx
+
+    - name: Download configuration schemas
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/irods/irods/refs/heads/main/schemas/configuration/v4/{{ item }}.in
+        dest: /var/lib/irods/configuration_schemas/v4/{{ item }}
+        mode: u+r
         timeout: 120
       register: download
       until: download is not failed
       retries: 10
-      with_items:
-        - host_access_control_config.json
-        - hosts_config.json
+      loop:
+        - client_environment.json
+        - database_config.json
+        - host_access_control.json
+        - host_resolution.json
+        - rule_engine.json
+        - server_config.json
+        - service_account_environment.json
+
+    - name: Expand server_config schema template values
+      ansible.builtin.lineinfile:
+        path: /var/lib/irods/configuration_schemas/v4/{{ item }}
+        regexp: '^(.*)@IRODS_CONFIGURATION_SCHEMA_PREFIX@@IRODS_HOME_DIRECTORY@(.*)$'
+        line: '\1var/lib/irods\2'
+        backrefs: true
+      loop:
+        - client_environment.json
+        - database_config.json
+        - host_access_control.json
+        - host_resolution.json
+        - rule_engine.json
         - server_config.json
         - service_account_environment.json

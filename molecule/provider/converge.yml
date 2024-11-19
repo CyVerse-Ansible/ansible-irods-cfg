@@ -6,3 +6,4 @@
       ansible.builtin.import_role:
         name: ansible-irods-cfg
         tasks_from: setup_irods.yml
+      tags: skip_ansible_lint

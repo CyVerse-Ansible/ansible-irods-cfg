@@ -2,18 +2,17 @@
 # These are the definitions of internal variables that are derived from the role variables providing
 # default values and ensuring correct typing and safe formatting
 
-_access_entries: "{{ irods_cfg_access_entries if irods_cfg_access_entries | d(none) else [] }}"
+_access_entries: "{{ irods_cfg_access_entries | d([]) }}"
 
-_authentication_file: >-
-  {{ irods_cfg_authentication_file if irods_cfg_authentication_file | d(none) else 
-    _authentication_file_default | d(none) }}
+_agent_factory_watcher_sleep_time: "{{ irods_cfg_agent_factory_watcher_sleep_time | d(none) }}"
 
-_catalog_provider_hosts: >-
-  {{ irods_cfg_catalog_provider_hosts if irods_cfg_catalog_provider_hosts | d(none) else 
-     ['localhost'] }}
-_catalog_service_role: >-
-  {{ irods_cfg_catalog_service_role if irods_cfg_catalog_service_role | d(none) else 'provider' }}
+_authentication_file: "{{ irods_cfg_authentication_file | d(none) }}"
 
+_catalog_provider_hosts: "{{ irods_cfg_catalog_provider_hosts | d([inventory_hostname]) }}"
+_catalog_service_role: "{{ irods_cfg_catalog_service_role | d('provider') }}"
+
+_client_api_allowlist_policy: "{{ irods_cfg_client_api_allowlist_policy | d('enforce') }}"
+_client_authentication_scheme: "{{ irods_cfg_client_authentication_scheme | d(none) }}"
 _client_default_hash_scheme: >-
   {{ irods_cfg_client_default_hash_scheme if irods_cfg_client_default_hash_scheme | d(none) else
     _client_default_hash_scheme_default | d(none) }}
@@ -25,7 +24,7 @@ _client_encryption_algorithm: >-
     _client_encryption_algorithm_default | d(none) }}
 _client_encryption_key_size: >-
   {{ irods_cfg_client_encryption_key_size
-      if irods_cfg_client_encryption_key_size | d(none) 
+      if irods_cfg_client_encryption_key_size | d(none)
         or irods_cfg_client_encryption_key_size | d(none) == 0 else
     _client_encryption_key_size_default | d(none) }}
 _client_encryption_num_hash_rounds: >-
@@ -35,9 +34,10 @@ _client_encryption_num_hash_rounds: >-
   _client_encryption_num_hash_rounds_default | d(none) }}
 _client_encryption_salt_size: >-
   {{ irods_cfg_client_encryption_salt_size
-      if irods_cfg_client_encryption_salt_size | d(none) 
+      if irods_cfg_client_encryption_salt_size | d(none)
         or irods_cfg_client_encryption_salt_size | d(none) == 0 else
     _client_encryption_salt_size_default | d(none) }}
+_client_log_level: "{{ irods_cfg_client_log_level | d(none) }}"
 _client_server_negotiation: >-
   {{ irods_cfg_client_server_negotiation if irods_cfg_client_server_negotiation | d(none) else
     'off' if irods_cfg_client_server_negotiation | d(none) == false else
@@ -45,209 +45,165 @@ _client_server_negotiation: >-
 _client_server_policy: >-
   {{ irods_cfg_client_server_policy if irods_cfg_client_server_policy | d(none) else
     _client_server_policy_default | d(none) }}
-_client_xmsg_port: >-
-  {{ irods_cfg_client_xmsg_port if irods_cfg_client_xmsg_port | d(none) else none }}
 
-_chown: "{{ irods_cfg_chown | default(true) | bool }}"
+_chown: "{{ irods_cfg_chown | d(true) }}"
 
 _connection_pool_refresh_time: >-
-  {{ irods_cfg_connection_pool_refresh_time 
-      if irods_cfg_connection_pool_refresh_time | d(none) else 
+  {{ irods_cfg_connection_pool_refresh_time
+      if irods_cfg_connection_pool_refresh_time | d(none) else
     _connection_pool_refresh_time_default | d(none) }}
 
-_cwd: "{{ irods_cfg_cwd if irods_cfg_cwd | d(none) else _cwd_default | d(none) }}"
+_controlled_user_connection_list:
+  control_type: "{{ irods_cfg_controlled_user_connection_list.control_type | d('denylist') }}"
+  users: "{{ irods_cfg_controlled_user_connection_list.users | d([]) }}"
 
-_database_user_password_salt: >-
-  {{ irods_cfg_database_user_password_salt if irods_cfg_database_user_password_salt | d(none) else 
-    none }}
+_cwd: "{{ irods_cfg_cwd if irods_cfg_cwd | d(none) else _cwd_default | d(omit) }}"
 
-_debug: "{{ irods_cfg_debug if irods_cfg_debug | d(none) else none }}"
+_database: "{{ __database_guess if _catalog_service_role == 'provider' else none }}"
+_database_user_password_salt: "{{ irods_cfg_database_user_password_salt | d(none) }}"
 
-_default_dir_mode: >-
-  {{ irods_cfg_default_dir_mode if irods_cfg_default_dir_mode | d(none) else '0750' }}
-_default_file_mode: >-
-  {{ irods_cfg_default_file_mode if irods_cfg_default_file_mode | d(none) else '0600' }}
-_default_hash_scheme: >-
-  {{ irods_cfg_default_hash_scheme if irods_cfg_default_hash_scheme | d(none) else 'SHA256' }}
+_debug: "{{ irods_cfg_debug | d(none) }}"
+
+_default_dir_mode: "{{ irods_cfg_default_dir_mode | d('0750') }}"
+_default_file_mode: "{{ irods_cfg_default_file_mode | d('0600') }}"
+_default_hash_scheme: "{{ irods_cfg_default_hash_scheme | d('SHA256') }}"
 _default_number_of_transfer_threads: >-
   {{ irods_cfg_default_number_of_transfer_threads
-      if irods_cfg_default_number_of_transfer_threads | d(none)
-        or irods_cfg_default_number_of_transfer_threads | d(none) == 0 else
-    4 }}
-_default_resource_directory: >-
-  {{ irods_cfg_default_resource_directory if irods_cfg_default_resource_directory | d(none) else 
-    none }}
-_default_resource_name: >-
-  {{ irods_cfg_default_resource_name if irods_cfg_default_resource_name | d(none) else none }}
-_default_temporary_password_lifetime: >- 
-  {{ irods_cfg_default_temporary_password_lifetime
-      if irods_cfg_default_temporary_password_lifetime | d(none) else
-    120 }}
+      if irods_cfg_default_number_of_transfer_threads | d(none) is not none else
+    _default_number_of_transfer_threads_default | d(none) }}
+_default_resource_directory: "{{ irods_cfg_default_resource_directory | d(none) }}"
+_default_resource_name: "{{ irods_cfg_default_resource_name | d('demoResc') }}"
+_default_temporary_password_lifetime: "{{ irods_cfg_default_temporary_password_lifetime | d(120) }}"
+
+_delay_rule_executors: "{{ irods_cfg_delay_rule_executors | d(none) }}"
+_delay_server_sleep_time: "{{ irods_cfg_delay_server_sleep_time | d(none) }}"
 
 _environment_file: >-
   {{ irods_cfg_environment_file if irods_cfg_environment_file | d(none) else
-    _environment_file_default 
-      | d('home/' ~ _system_account_name ~ '/.irods/irods_environment.json') }}
+    _environment_file_default | d('home/' ~ _system_account_name ~ '/.irods/irods_environment.json') }}
 _environment_variables: >-
   {{ (irods_cfg_environment_variables if irods_cfg_environment_variables | d(none) else {})
     | combine(
-      {'IRODS_DATABASE_USER_PASSWORD_SALT': _database_user_password_salt} 
+      {'IRODS_DATABASE_USER_PASSWORD_SALT': _database_user_password_salt}
         if _database_user_password_salt else
       {}) }}
 
-_federation: "{{ irods_cfg_federation if irods_cfg_federation | d(none) else [] }}"
+_federation: "{{ irods_cfg_federation | d([]) }}"
 
-_for_server: "{{ irods_cfg_for_server | bool if irods_cfg_for_server | d(none) else false }}"
+_for_server: "{{ irods_cfg_for_server | d(false) }}"
 
-_gsi_server_dn: "{{ irods_cfg_gsi_server_dn if irods_cfg_gsi_server_dn | d(none) else none }}"
+_gsi_server_dn: "{{ irods_cfg_gsi_server_dn | d(none) }}"
 
-_home: "{{ irods_cfg_home if irods_cfg_home | d(none) else _home_default | d(none) }}"
+_home: "{{ irods_cfg_home if irods_cfg_home | d(none) else _home_default | d(omit) }}"
 
-_host: "{{ irods_cfg_host if irods_cfg_host | d(none) else inventory_hostname }}"
-_host_entries: "{{ irods_cfg_host_entries if irods_cfg_host_entries | d(none) else [] }}"
+_host: "{{ irods_cfg_host | d(inventory_hostname) }}"
+_host_entries: "{{ irods_cfg_host_entries | d([]) }}"
 
-_icat: "{{ __icat_guess if irods_cfg_icat | d(none) is mapping else none }}"
-
-_kerberos_name: "{{ irods_cfg_kerberos_name if irods_cfg_kerberos_name | d(none) else none }}"
-
-_log_level: "{{ irods_cfg_log_level if irods_cfg_log_level | d(none) else none }}"
+_log_level: "{{ irods_cfg_log_level | d({}) }}"
 
 _match_hash_policy: >-
   {{ irods_cfg_match_hash_policy if irods_cfg_match_hash_policy | d(none) else
     _match_hash_policy_default | d(none) }}
 
-_maximum_number_of_concurrent_rule_engine_server_processes: >-
-  {{ irods_cfg_maximum_number_of_concurrent_rule_engine_server_processes
-      if irods_cfg_maximum_number_of_concurrent_rule_engine_server_processes | d(none) else
-    4 }}
-
+_maximum_connections: "{{ irods_cfg_maximum_connections | d(none) }}"
+_maximum_size_of_delay_queue: "{{ irods_cfg_maximum_size_of_delay_queue | d(none) }}"
 _maximum_size_for_single_buffer: >-
   {{ irods_cfg_maximum_size_for_single_buffer
-      if irods_cfg_maximum_size_for_single_buffer | d(none)
-        or irods_cfg_maximum_size_for_single_buffer | d(none) == 0 else
-    32 }}
+      if irods_cfg_maximum_size_for_single_buffer | d(none) else
+    _maximum_size_for_single_buffer_default | d(none) }}
 
 _maximum_temporary_password_lifetime: >-
-  {{ irods_cfg_maximum_temporary_password_lifetime
-      if irods_cfg_maximum_temporary_password_lifetime | d(none) else
-    1000 }}
+  {{ irods_cfg_maximum_temporary_password_lifetime | d(1000) }}
 
-_negotiation_key: >-
-  {{ irods_cfg_negotiation_key if irods_cfg_negotiation_key | d(none) else 
-    'TEMPORARY_32byte_negotiation_key' }}
+_migrate_delay_server_sleep_time: "{{ irods_cfg_migrate_delay_server_sleep_time | d(none) }}"
 
-_pam_no_extend: "{{ irods_cfg_pam_no_extend if irods_cfg_pam_no_extend | d(none) else none }}"
-_pam_password_length: >-
-  {{ irods_cfg_pam_password_length
-      if irods_cfg_pam_password_length | d(none) 
-        or irods_cfg_pam_password_length | d(none) == 0 else
-    none }}
-_pam_password_max_time: >-
-  {{ irods_cfg_pam_password_max_time if irods_cfg_pam_password_max_time | d(none) else none }}
-_pam_password_min_time: >-
-  {{ irods_cfg_pam_password_min_time if irods_cfg_pam_password_min_time | d(none) else none }}
+_negotiation_key: "{{ irods_cfg_negotiation_key | d('TEMPORARY_32byte_negotiation_key') }}"
 
-_plugins_home: "{{ irods_cfg_plugins_home if irods_cfg_plugins_home | d(none) else none }}"
+_number_of_concurrent_delay_rule_executors: >-
+  {{ irods_cfg_number_of_concurrent_delay_rule_executors | d(none) }}
 
-_re_additional_data_variable_mappings: >-
-  {{ irods_cfg_re_additional_data_variable_mappings
-      if irods_cfg_re_additional_data_variable_mappings | d(none) else
-    [] }}
+_plugins_home: "{{ irods_cfg_plugins_home | d(none) }}"
 
-_re_additional_function_name_mappings: >-
-  {{ irods_cfg_re_additional_function_name_mappings
-      if irods_cfg_re_additional_function_name_mappings | d(none) else
-    [] }}
-
-_re_additional_rulebases: >-
-  {{ irods_cfg_re_additional_rulebases if irods_cfg_re_additional_rulebases | d(none) else [] }}
+_re: "{{ __re_guess if irods_cfg_re is not none else none }}"
 
 _root_dir: >-
   {{ irods_cfg_root_dir | regex_replace('\\/$', '') if irods_cfg_root_dir | d(none) else '' }}
 
-_rule_engine_server_sleep_time: >-
-  {{ irods_cfg_rule_engine_server_sleep_time 
-      if irods_cfg_rule_engine_server_sleep_time | d(none) else 
-    30 }}
+_rule_engine_namespaces: "{{ irods_cfg_rule_engine_namespaces | d(['']) }}"
 
 _schema_validation_base_uri: >-
-  {{ irods_cfg_schema_validation_base_uri if irods_cfg_schema_validation_base_uri | d(none) else
-    'https://schemas.irods.org/configuration' }}
+  {{ irods_cfg_schema_validation_base_uri | d('file:///var/lib/irods/configuration_schemas') }}
+_schema_version: v4
 
 _server_control_plane_encryption_algorithm: >-
   {{ irods_cfg_server_control_plane_encryption_algorithm
       if irods_cfg_server_control_plane_encryption_algorithm | d(none) else
-    'AES-256-CBC' }}
+    _server_control_plane_encryption_algorithm_default | d(none) }}
 _server_control_plane_encryption_num_hash_rounds: >-
   {{ irods_cfg_server_control_plane_encryption_num_hash_rounds
-      if irods_cfg_server_control_plane_encryption_num_hash_rounds | d(none)
-        or irods_cfg_server_control_plane_encryption_num_hash_rounds | d(none) == 0 else
-    16 }}
+      if irods_cfg_server_control_plane_encryption_num_hash_rounds | d(none) is not none else
+    _server_control_plane_encryption_num_hash_rounds_default | d(none) }}
 _server_control_plane_key: >-
   {{ irods_cfg_server_control_plane_key if irods_cfg_server_control_plane_key | d(none) else
     _server_control_plane_key_default | d(none) }}
 _server_control_plane_port: >-
   {{ irods_cfg_server_control_plane_port if irods_cfg_server_control_plane_port | d(none) else
     _server_control_plane_port_default | d(none) }}
-_server_control_plane_timeout: >-
-  {{ irods_cfg_server_control_plane_timeout if irods_cfg_server_control_plane_timeout | d(none) else 
-    10000 }}
-_server_port_range_end: >-
-  {{ irods_cfg_server_port_range_end if irods_cfg_server_port_range_end | d(none) else 20199 }}
-_server_port_range_start: >-
-  {{ irods_cfg_server_port_range_start if irods_cfg_server_port_range_start | d(none) else 20000 }}
+_server_control_plane_timeout: "{{ irods_cfg_server_control_plane_timeout | d(10000) }}"
+_server_port_range_end: "{{ irods_cfg_server_port_range_end | d(20199) }}"
+_server_port_range_start: "{{ irods_cfg_server_port_range_start | d(20000) }}"
 
-_ssl_ca_certificate_file: >-
-  {{ irods_cfg_ssl_ca_certificate_file if irods_cfg_ssl_ca_certificate_file | d(false) else none }}
-_ssl_ca_certificate_path: >-
-  {{ irods_cfg_ssl_ca_certificate_path if irods_cfg_ssl_ca_certificate_path | d(none) else none }}
-_ssl_certificate_chain_file: >-
-  {{ irods_cfg_ssl_certificate_chain_file if irods_cfg_ssl_certificate_chain_file | d(none) else 
-    none }}
-_ssl_certificate_key_file: >-
-  {{ irods_cfg_ssl_certificate_key_file if irods_cfg_ssl_certificate_key_file | d(none) else none }}
-_ssl_dh_params_file: >-
-  {{ irods_cfg_ssl_dh_params_file if irods_cfg_ssl_dh_params_file | d(none) else none }}
-_ssl_verify_server: >-
-  {{ irods_cfg_ssl_verify_server if irods_cfg_ssl_verify_server | d(none) else none }}
+_ssl_ca_certificate_file: "{{ irods_cfg_ssl_ca_certificate_file | d(none) }}"
+_ssl_ca_certificate_path: "{{ irods_cfg_ssl_ca_certificate_path | d(none) }}"
+_ssl_certificate_chain_file: "{{ irods_cfg_ssl_certificate_chain_file | d(none) }}"
+_ssl_certificate_key_file: "{{ irods_cfg_ssl_certificate_key_file | d(none) }}"
+_ssl_dh_params_file: "{{ irods_cfg_ssl_dh_params_file | d(none) }}"
+_ssl_verify_server: "{{ irods_cfg_ssl_verify_server | d(none) }}"
 
-_system_account_name: >-
-  {{ irods_cfg_system_account_name if irods_cfg_system_account_name | d(none) else 'irods' }}
-_system_group_name: >- 
-  {{ irods_cfg_system_group_name if irods_cfg_system_group_name | d(none) else 
-    _system_account_name }}
+_stacktrace_file_processor_sleep_time: >-
+  {{ irods_cfg_stacktrace_file_processor_sleep_time | d(none) }}
+
+_system_account_name: "{{ irods_cfg_system_account_name | d('irods') }}"
+_system_group_name: "{{ irods_cfg_system_group_name | d(_system_account_name) }}"
+
+_tcp_keepalive_intvl: "{{ irods_cfg_tcp_keepalive_intvl | d(none) }}"
+_tcp_keepalive_probes: "{{ irods_cfg_tcp_keepalive_probes | d(none) }}"
+_tcp_keepalive_time: "{{ irods_cfg_tcp_keepalive_time | d(none) }}"
 
 _transfer_buffer_size_for_parallel_transfer: >-
   {{ irods_cfg_transfer_buffer_size_for_parallel_transfer
-      if irods_cfg_transfer_buffer_size_for_parallel_transfer | d(none)
-        or irods_cfg_transfer_buffer_size_for_parallel_transfer | d(none) == 0 else
-    4 }}
+      if irods_cfg_transfer_buffer_size_for_parallel_transfer | d(none) else
+    _transfer_buffer_size_for_parallel_transfer_default | d(none) }}
 _transfer_chunk_size_for_parallel_transfer: >-
   {{ irods_cfg_transfer_chunk_size_for_parallel_transfer
       if irods_cfg_transfer_chunk_size_for_parallel_transfer | d(none) else
     40 }}
 
-_validate: "{{ irods_cfg_validate | bool if irods_cfg_validate | d(none) else false }}"
+_validate: "{{ irods_cfg_validate | d(false) }}"
 
-_xmsg_host: "{{ irods_cfg_xmsg_host if irods_cfg_xmsg_host | d(none) else none }}"
-_xmsg_port: "{{ irods_cfg_xmsg_port if irods_cfg_xmsg_port | d(none) else 1279 }}"
-
-_zone_auth_scheme: >-
-  {{ irods_cfg_zone_auth_scheme if irods_cfg_zone_auth_scheme | d(none) else
-    _zone_auth_scheme_default | d(none) }}
-_zone_key: "{{ irods_cfg_zone_key if irods_cfg_zone_key | d(none) else 'TEMPORARY_zone_key' }}"
-_zone_name: "{{ irods_cfg_zone_name if irods_cfg_zone_name | d(none) else 'tempZone' }}"
-_zone_password: "{{ irods_cfg_zone_password if irods_cfg_zone_password | d(none) else 'rods' }}"
-_zone_port: "{{ irods_cfg_zone_port if irods_cfg_zone_port | d(none) else 1247 }}"
-_zone_user: "{{ irods_cfg_zone_user if irods_cfg_zone_user | d(none) else 'rods' }}"
+_zone_auth_scheme: "{{ irods_cfg_zone_auth_scheme | d('native') }}"
+_zone_key: "{{ irods_cfg_zone_key | d('TEMPORARY_zone_key') }}"
+_zone_name: "{{ irods_cfg_zone_name | d('tempZone') }}"
+_zone_password: "{{ irods_cfg_zone_password | d('rods') }}"
+_zone_port: "{{ irods_cfg_zone_port | d(1247) }}"
+_zone_user: "{{ irods_cfg_zone_user | d('rods') }}"
 
 
-# This is the value of _icat if the server being configured is an IES
-__icat_guess:
-  catalog_database_type: "{{ irods_cfg_icat.catalog_database_type | d('postgres') }}"
-  db_host: "{{ irods_cfg_icat.db_host | d('localhost') }}"
-  db_name: "{{ irods_cfg_icat.db_name | d('ICAT') }}"
-  db_password: "{{ irods_cfg_icat.db_password | d('testpassword') }}"
-  db_port: "{{ irods_cfg_icat.db_port | d(5432) }}"
-  db_username: "{{ irods_cfg_icat.db_username | d('irods') }}"
-  odbc_driver: "{{ irods_cfg_icat.odbc_driver | d(none) }}"
+# This is the value of _database if the server being configured is a catalog provider
+__database_guess:
+  catalog_database_type: "{{ irods_cfg_database.catalog_database_type | d('postgres') }}"
+  db_host: "{{ irods_cfg_database.db_host | d('localhost') }}"
+  db_name: "{{ irods_cfg_database.db_name | d('ICAT') }}"
+  db_odbc_driver: "{{ irods_cfg_database.db_odbc_driver | d('PostgreSQL ANSI') }}"
+  db_password: "{{ irods_cfg_database.db_password | d('testpassword') }}"
+  db_port: "{{ irods_cfg_database.db_port | d(5432) }}"
+  db_username: "{{ irods_cfg_database.db_username | d('irods') }}"
+
+# This is the value of _re if a iRODS rule language rule engine is being configured
+__re_guess:
+  additional_data_variable_mappings: >-
+    {{ irods_cfg_re.additional_data_variable_mappings | d([]) if irods_cfg_re is mapping else [] }}
+  additional_function_name_mappings: >-
+    {{ irods_cfg_re.additional_function_name_mappings | d([]) if irods_cfg_re is mapping else [] }}
+  additional_rulebases: >-
+    {{ irods_cfg_re.additional_rulebases | d([]) if irods_cfg_re is mapping else [] }}

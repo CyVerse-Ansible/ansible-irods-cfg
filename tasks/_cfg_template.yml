@@ -16,11 +16,12 @@
   vars:
     _system_account_own_path: "{{ (_root_dir ~ '/' ~ _cfg_template_dest_file) | dirname }}"
 
-- name: Cfg_tempate | generate {{ _cfg_template_dest_file }}
+- name: Cfg_template | generate {{ _cfg_template_dest_file }}
   ansible.builtin.template:
     src: "{{ _cfg_template_name | default((_cfg_template_dest_file | basename) ~ '.j2') }}"
     dest: "{{ _root_dir }}/{{ _cfg_template_dest_file }}"
     mode: u+r
+    backup: true
   notify:
     - Changed config
 

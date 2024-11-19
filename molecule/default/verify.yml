@@ -4,7 +4,6 @@
   connection: local
   vars_files:
     - ../../vars/main.yml
-    - ../../vars/irods_environment_client.yml
   vars:
     irods_environment: >-
       {{ lookup('ansible.builtin.template', '../../templates/irods_environment.json.j2') }}
@@ -20,6 +19,7 @@
           - irods_environment.irods_cwd is not defined
           - irods_environment.irods_debug is not defined
           - irods_environment.irods_default_hash_scheme is not defined
+          - irods_environment.irods_default_number_of_transfer_threads is not defined
           - irods_environment.irods_default_resource is not defined
           - irods_environment.irods_encryption_algorithm is not defined
           - irods_environment.irods_encryption_key_size is not defined
@@ -30,6 +30,7 @@
           - irods_environment.irods_host == 'localhost'
           - irods_environment.irods_log_level is not defined
           - irods_environment.irods_match_hash_policy is not defined
+          - irods_environment.irods_maximum_size_for_single_buffer_in_megabytes is not defined
           - irods_environment.irods_plugins_home is not defined
           - irods_environment.irods_port == 1247
           - irods_environment.irods_server_control_plane_encryption_algorithm is not defined
@@ -42,12 +43,14 @@
           - irods_environment.irods_ssl_certificate_key_file is not defined
           - irods_environment.irods_ssl_dh_params_file is not defined
           - irods_environment.irods_ssl_verify_server is not defined
+          - irods_environment.irods_tcp_keepalive_intvl_in_seconds is not defined
+          - irods_environment.irods_tcp_keepalive_probes is not defined
+          - irods_environment.irods_tcp_keepalive_time_in_seconds is not defined
+          - irods_environment.irods_transfer_buffer_size_for_parallel_transfer_in_megabytes is not defined
           - irods_environment.irods_user_name == 'rods'
-          - irods_environment.irods_xmsg_host is not defined
-          - irods_environment.irods_xmsg_port is not defined
           - irods_environment.irods_zone_name == 'tempZone'
-          - irods_environment.schema_name == 'client_environment'
-          - irods_environment.schema_version == 'v3'
+          - irods_environment.schema_name is not defined
+          - irods_environment.schema_version is not defined
 
 
 - name: Verify | default variables generate correct server side irods_environment
@@ -64,29 +67,31 @@
     - name: Verify irods_environment.json expands correctly
       ansible.builtin.assert:
         that:
-          - irods_environment.irods_authentication_file == '/var/lib/irods/.irods/.irodsA'
+          - irods_environment.irods_authentication_file is not defined
           - irods_environment.irods_authentication_scheme is not defined
           - irods_environment.irods_client_server_negotiation == 'request_server_negotiation'
-          - irods_environment.irods_client_server_policy == 'CS_NEG_DONT_CARE'
+          - irods_environment.irods_client_server_policy == 'CS_NEG_REFUSE'
           - irods_environment.irods_connection_pool_refresh_time_in_seconds == 300
-          - irods_environment.irods_cwd == '/tempZone/home/rods'
+          - irods_environment.irods_cwd == ''
           - irods_environment.irods_debug is not defined
           - irods_environment.irods_default_hash_scheme == 'SHA256'
+          - irods_environment.irods_default_number_of_transfer_threads == 4
           - irods_environment.irods_default_resource == 'demoResc'
           - irods_environment.irods_encryption_algorithm == 'AES-256-CBC'
           - irods_environment.irods_encryption_key_size == 32
           - irods_environment.irods_encryption_num_hash_rounds == 16
           - irods_environment.irods_encryption_salt_size == 8
           - irods_environment.irods_gsi_server_dn is not defined
-          - irods_environment.irods_home == '/tempZone/home/rods'
+          - irods_environment.irods_home == ''
           - irods_environment.irods_host == 'localhost'
           - irods_environment.irods_log_level is not defined
           - irods_environment.irods_match_hash_policy == 'compatible'
+          - irods_environment.irods_maximum_size_for_single_buffer_in_megabytes == 32
           - irods_environment.irods_plugins_home is not defined
           - irods_environment.irods_port == 1247
           - irods_environment.irods_server_control_plane_encryption_algorithm == 'AES-256-CBC'
           - irods_environment.irods_server_control_plane_encryption_num_hash_rounds == 16
-          - irods_environment.irods_server_control_plane_key == 'TEMPORARY__32byte_ctrl_plane_key'
+          - irods_environment.irods_server_control_plane_key == '32_byte_server_control_plane_key'
           - irods_environment.irods_server_control_plane_port == 1248
           - irods_environment.irods_ssl_ca_certificate_file is not defined
           - irods_environment.irods_ssl_ca_certificate_path is not defined
@@ -94,12 +99,14 @@
           - irods_environment.irods_ssl_certificate_key_file is not defined
           - irods_environment.irods_ssl_dh_params_file is not defined
           - irods_environment.irods_ssl_verify_server is not defined
+          - irods_environment.irods_tcp_keepalive_intvl_in_seconds is not defined
+          - irods_environment.irods_tcp_keepalive_probes is not defined
+          - irods_environment.irods_tcp_keepalive_time_in_seconds is not defined
+          - irods_environment.irods_transfer_buffer_size_for_parallel_transfer_in_megabytes == 4
           - irods_environment.irods_user_name == 'rods'
-          - irods_environment.irods_xmsg_host is not defined
-          - irods_environment.irods_xmsg_port is not defined
           - irods_environment.irods_zone_name == 'tempZone'
           - irods_environment.schema_name == 'service_account_environment'
-          - irods_environment.schema_version == 'v3'
+          - irods_environment.schema_version == 'v4'
 
 
 - name: Verify | default variables generate correct server_config
@@ -115,14 +122,18 @@
     - name: Verify server_config.json is correct
       ansible.builtin.assert:
         that:
+          - server_config.advanced_settings.agent_factory_watcher_sleep_time_in_seconds is not defined
           - server_config.advanced_settings.default_number_of_transfer_threads == 4
           - server_config.advanced_settings.default_temporary_password_lifetime_in_seconds == 120
-          - >-
-            server_config.advanced_settings.maximum_number_of_concurrent_rule_engine_server_processes
-            == 4
+          - server_config.advanced_settings.delay_rule_executors is not defined
+          - server_config.advanced_settings.delay_server_sleep_time_in_seconds is not defined
+          - server_config.advanced_settings.maximum_number_of_concurrent_rule_engine_server_processes is not defined
+          - server_config.advanced_settings.maximum_size_of_delay_queue_in_bytes is not defined
           - server_config.advanced_settings.maximum_size_for_single_buffer_in_megabytes == 32
           - server_config.advanced_settings.maximum_temporary_password_lifetime_in_seconds == 1000
-          - server_config.advanced_settings.rule_engine_server_sleep_time_in_seconds == 30
+          - server_config.advanced_settings.migrate_delay_server_sleep_time_in_seconds is not defined
+          - server_config.advanced_settings.number_of_concurrent_delay_rule_executors is not defined
+          - server_config.advanced_settings.stacktrace_file_processor_sleep_time_in_seconds is not defined
           - >-
             server_config.advanced_settings.transfer_buffer_size_for_parallel_transfer_in_megabytes
             == 4
@@ -132,57 +143,67 @@
           - server_config.catalog_provider_hosts|length == 1
           - server_config.catalog_provider_hosts[0] == 'localhost'
           - server_config.catalog_service_role == 'provider'
+          - server_config.client_api_allowlist_policy == 'enforce'
+          - server_config.controlled_user_connection_list.control_type == 'denylist'
+          - server_config.controlled_user_connection_list.users|length == 0
           - server_config.default_dir_mode == '0750'
           - server_config.default_file_mode == '0600'
           - server_config.default_hash_scheme == 'SHA256'
-          - server_config.default_resource_directory is not defined
           - server_config.environment_variables == {}
-          - server_config.federation|length == 0
+          - server_config.federation == []
+          - server_config.host_access_control.access_entries == []
+          - server_config.host_resolution.host_entries == []
+          - server_config.log_level == {}
           - server_config.kerberos_name is not defined
           - server_config.match_hash_policy == 'compatible'
+          - server_config.maximum_connections is not defined
           - server_config.negotiation_key == 'TEMPORARY_32byte_negotiation_key'
           - server_config.pam_no_extend is not defined
           - server_config.pam_password_length is not defined
           - server_config.pam_password_max_time is not defined
           - server_config.pam_password_min_time is not defined
-          - server_config.plugin_configuration.rule_engines|length == 2
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_name
-            == 'irods_rule_engine_plugin-irods_rule_language'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set
-              | length
-            == 1
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set[0]
-            == 'core'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set
-              | length
-            == 1
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set[0]
-            == 'core'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set
-              | length
-            == 1
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set[0]
-            == 'core'
+          - server_config.plugin_configuration.authentication == {}
+          - server_config.plugin_configuration.database.postgres.db_host == 'localhost'
+          - server_config.plugin_configuration.database.postgres.db_name == 'ICAT'
+          - server_config.plugin_configuration.database.postgres.db_odbc_driver == 'PostgreSQL ANSI'
+          - server_config.plugin_configuration.database.postgres.db_password == 'testpassword'
+          - server_config.plugin_configuration.database.postgres.db_port == 5432
+          - server_config.plugin_configuration.database.postgres.db_sslcert is not defined
+          - server_config.plugin_configuration.database.postgres.db_sslkey is not defined
+          - server_config.plugin_configuration.database.postgres.db_sslmode is not defined
+          - server_config.plugin_configuration.database.postgres.db_sslrootcert is not defined
+          - server_config.plugin_configuration.database.postgres.db_username == 'irods'
+          - server_config.plugin_configuration.network == {}
+          - server_config.plugin_configuration.resource == {}
+          - server_config.plugin_configuration.rule_engines | length == 2
+          - server_config.plugin_configuration.rule_engines[0].instance_name == 'irods_rule_engine_plugin-irods_rule_language-instance'
+          - server_config.plugin_configuration.rule_engines[0].plugin_name == 'irods_rule_engine_plugin-irods_rule_language'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set | length == 1
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set[0] == 'core'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set | length == 1
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set[0] == 'core'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set | length == 1
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set[0] == 'core'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps | length == 3
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps[0] == 'ac[^ ]*'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps[1] == 'msi[^ ]*'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps[2] == '[^ ]*pep_[^ ]*_(pre|post|except|finally)'
+          - server_config.plugin_configuration.rule_engines[0].shared_memory_instance == 'irods_rule_language_rule_engine'
+          - server_config.plugin_configuration.rule_engines[1].instance_name == 'irods_rule_engine_plugin-cpp_default_policy-instance'
+          - server_config.plugin_configuration.rule_engines[1].plugin_name == 'irods_rule_engine_plugin-cpp_default_policy'
+          - server_config.plugin_configuration.rule_engines[1].plugin_specific_configuration == {}
           - server_config.rule_engine_namespaces | length == 1
           - server_config.rule_engine_namespaces[0] == ''
           - server_config.schema_name == 'server_config'
-          - server_config.schema_validation_base_uri == 'https://schemas.irods.org/configuration'
-          - server_config.schema_version == 'v3'
+          - server_config.schema_validation_base_uri == 'file:///var/lib/irods/configuration_schemas'
+          - server_config.schema_version == 'v4'
           - server_config.server_control_plane_encryption_algorithm == 'AES-256-CBC'
           - server_config.server_control_plane_encryption_num_hash_rounds == 16
-          - server_config.server_control_plane_key == 'TEMPORARY__32byte_ctrl_plane_key'
+          - server_config.server_control_plane_key == '32_byte_server_control_plane_key'
           - server_config.server_control_plane_port == 1248
           - server_config.server_control_plane_timeout_milliseconds == 10000
-          - server_config.server_port_range_start == 20000
           - server_config.server_port_range_end == 20199
-          - server_config.xmsg_port == 1279
+          - server_config.server_port_range_start == 20000
           - server_config.zone_auth_scheme == 'native'
           - server_config.zone_key == 'TEMPORARY_zone_key'
           - server_config.zone_name == 'tempZone'
@@ -190,82 +211,20 @@
           - server_config.zone_user == 'rods'
 
 
-- name: Verify | default variables generate correct remaining configuration files
+- name: Verify | default variables generate correct service_account.config
   hosts: localhost
   gather_facts: false
   vars_files:
     - ../../vars/main.yml
   vars:
-    hacc: >-
-      {{ lookup('ansible.builtin.template', '../../templates/host_access_control_config.json.j2') }}
-    hosts_config: "{{ lookup('ansible.builtin.template', '../../templates/hosts_config.json.j2') }}"
     service_account: >-
       {{ lookup('ansible.builtin.template', '../../templates/service_account.config.j2') }}
   tasks:
-    - name: Verify that derived irods_cfg_icat is null
-      ansible.builtin.assert:
-        that: _icat is not mapping
-
-    - name: Verify host_access_control_config.json is correct
-      ansible.builtin.assert:
-        that:
-          - hacc.access_entries | length == 0
-          - hacc.schema_name == 'host_access_control_config'
-          - hacc.schema_version == 'v3'
-
-    - name: Verify hosts_config.json is correct
-      ansible.builtin.assert:
-        that:
-          - hosts_config.host_entries | length == 0
-          - hosts_config.schema_name == 'hosts_config'
-          - hosts_config.schema_version == 'v3'
-
     - name: Verify service_account.config is correct
       ansible.builtin.assert:
         that:
           - service_account is search('IRODS_SERVICE_ACCOUNT_NAME=irods')
           - service_account is search('IRODS_SERVICE_GROUP_NAME=irods')
-
-
-- name: Verify | host_access_control_config options
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vars/host_access_control_config_opts.yml
-    - ../../vars/main.yml
-  vars:
-    hacc: >-
-      {{ lookup('ansible.builtin.template', '../../templates/host_access_control_config.json.j2') }}
-  tasks:
-    - name: Verify entries
-      ansible.builtin.assert:
-        that:
-          - hacc.access_entries | length == 2
-          - hacc.access_entries[0].address == 'address1'
-          - hacc.access_entries[1].group == 'group2'
-          - hacc.access_entries[0].mask == 'mask1'
-          - hacc.access_entries[1].user == 'user2'
-
-
-- name: Verify | hosts_config options
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vars/hosts_config_opts.yml
-    - ../../vars/main.yml
-  vars:
-    hosts_config: "{{ lookup('ansible.builtin.template', '../../templates/hosts_config.json.j2') }}"
-  tasks:
-    - name: Verify entries
-      ansible.builtin.assert:
-        that:
-          - hosts_config.host_entries | length == 2
-          - hosts_config.host_entries[0].address_type == 'local'
-          - hosts_config.host_entries[0].addresses | length == 1
-          - hosts_config.host_entries[0].addresses[0].address == 'my.host.com'
-          - hosts_config.host_entries[1].address_type == 'remote'
-          - hosts_config.host_entries[1].addresses | length == 2
-          - hosts_config.host_entries[1].addresses[1].address == '1.2.3.4'
 
 
 - name: Verify | irods_environment options
@@ -291,6 +250,7 @@
           - irods_environment.irods_cwd == '/zone'
           - irods_environment.irods_debug == 'CAT'
           - irods_environment.irods_default_hash_scheme == 'MD5'
+          - irods_environment.irods_default_number_of_transfer_threads == 3
           - irods_environment.irods_default_resource == 'resource'
           - irods_environment.irods_encryption_algorithm == 'algorithm'
           - irods_environment.irods_encryption_key_size == 1
@@ -301,6 +261,7 @@
           - irods_environment.irods_host == 'host'
           - irods_environment.irods_log_level == 4
           - irods_environment.irods_match_hash_policy == 'strict'
+          - irods_environment.irods_maximum_size_for_single_buffer_in_megabytes == 200
           - irods_environment.irods_plugins_home == '/plugins'
           - irods_environment.irods_port == 7
           - irods_environment.irods_server_control_plane_encryption_algorithm == 'svr_alg'
@@ -313,9 +274,11 @@
           - irods_environment.irods_ssl_certificate_key_file == 'key_file'
           - irods_environment.irods_ssl_dh_params_file == 'params_file'
           - irods_environment.irods_ssl_verify_server == 'cert'
+          - irods_environment.irods_tcp_keepalive_intvl_in_seconds == 1
+          - irods_environment.irods_tcp_keepalive_probes == 2
+          - irods_environment.irods_tcp_keepalive_time_in_seconds == 3
+          - irods_environment.irods_transfer_buffer_size_for_parallel_transfer_in_megabytes == 100
           - irods_environment.irods_user_name == 'user'
-          - irods_environment.irods_xmsg_host == 'xmsg_host'
-          - irods_environment.irods_xmsg_port == 6
           - irods_environment.irods_zone_name == 'zone'
 
 
@@ -333,103 +296,108 @@
     - name: Verify optional fields
       ansible.builtin.assert:
         that:
+          - server_config.advanced_settings.agent_factory_watcher_sleep_time_in_seconds == 4
           - server_config.advanced_settings.default_number_of_transfer_threads == 16
           - server_config.advanced_settings.default_temporary_password_lifetime_in_seconds == 1
-          - >-
-            server_config.advanced_settings.maximum_number_of_concurrent_rule_engine_server_processes
-            == 2
+          - server_config.advanced_settings.delay_rule_executors | length == 2
+          - server_config.advanced_settings.delay_rule_executors[1] == 'executor2'
+          - server_config.advanced_settings.delay_server_sleep_time_in_seconds == 20
+          - server_config.advanced_settings.maximum_number_of_concurrent_rule_engine_server_processes is not defined
           - server_config.advanced_settings.maximum_size_for_single_buffer_in_megabytes == 3
+          - server_config.advanced_settings.maximum_size_of_delay_queue_in_bytes == 1
           - server_config.advanced_settings.maximum_temporary_password_lifetime_in_seconds == 4
-          - server_config.advanced_settings.rule_engine_server_sleep_time_in_seconds == 20
+          - server_config.advanced_settings.migrate_delay_server_sleep_time_in_seconds == 4
+          - server_config.advanced_settings.number_of_concurrent_delay_rule_executors == 5
+          - server_config.advanced_settings.stacktrace_file_processor_sleep_time_in_seconds == 9
           - >-
             server_config.advanced_settings.transfer_buffer_size_for_parallel_transfer_in_megabytes
             == 32
           - >-
             server_config.advanced_settings.transfer_chunk_size_for_parallel_transfer_in_megabytes
             == 5
-          - server_config.catalog_provider_hosts|length == 2
+          - server_config.catalog_provider_hosts | length == 2
           - server_config.catalog_provider_hosts[0] == 'provider1'
           - server_config.catalog_service_role == 'consumer'
-          - server_config.default_resource_directory == 'vault'
-          - server_config.default_resource_name == 'resc'
+          - server_config.client_api_allowlist_policy == 'disabled'
+          - server_config.controlled_user_connection_list.control_type == 'allowlist'
+          - server_config.controlled_user_connection_list.users | length == 2
+          - server_config.controlled_user_connection_list.users[0] == 'user1#zone'
+          - server_config.controlled_user_connection_list.users[1] == 'user2#cyverse'
+          - server_config.default_dir_mode == '700'
+          - server_config.default_file_mode == '640'
+          - server_config.default_hash_scheme == 'MD5'
+          - server_config.default_resource_name is not defined
           - server_config.environment_variables.IRODS_DATABASE_USER_PASSWORD_SALT == 'salt'
           - server_config.environment_variables.var1 == 'val1'
           - server_config.environment_variables.var2 == 'val2'
           - server_config.federation|length == 2
           - server_config.federation[0].catalog_provider_hosts|length == 3
           - server_config.federation[0].catalog_provider_hosts[0] == 'icat1'
+          - server_config.federation[0].negotiation_key == 'TEMPORARY_32byte_negotiation_ke1'
           - server_config.federation[0].zone_name == 'zone1'
           - server_config.federation[0].zone_key == 'key1'
-          - server_config.federation[0].negotiation_key == 'TEMPORARY_32byte_negotiation_ke1'
-          - server_config.kerberos_name == 'kerberos'
-          - server_config.pam_no_extend == true
-          - server_config.pam_password_length == 0
-          - server_config.pam_password_max_time == 1
-          - server_config.pam_password_min_time == 2
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set
-              | length
-            == 3
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set[0]
-            == 'dvm1'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set[2]
-            == 'core'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set
-              | length
-            == 3
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set[1]
-            == 'fnm2'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set[2]
-            == 'core'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set
-              | length
-            == 3
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set[0]
-            == 're1'
-          - >-
-            server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set[2]
-            == 'core'
-          - server_config.xmsg_port == 3
+          - server_config.federation[0].zone_port is not defined
+          - server_config.federation[1].zone_port == 1246
+          - server_config.host_access_control.access_entries | length == 2
+          - server_config.host_access_control.access_entries[0].address == '1.2.3.4'
+          - server_config.host_access_control.access_entries[0].group == 'group1'
+          - server_config.host_access_control.access_entries[0].mask == '255.0.0.0'
+          - server_config.host_access_control.access_entries[0].user == 'rods'
+          - server_config.host_resolution.host_entries | length == 2
+          - server_config.host_resolution.host_entries[0].address_type == 'local'
+          - server_config.host_resolution.host_entries[0].addresses | length == 2
+          - server_config.host_resolution.host_entries[0].addresses[0] == 'address'
+          - server_config.host_resolution.host_entries[1].address_type == 'remote'
+          - server_config.host_resolution.host_entries[1].addresses | length == 3
+          - server_config.kerberos_name is not defined
+          - server_config.log_level.agent == 'trace'
+          - server_config.log_level.agent_factory == 'debug'
+          - server_config.log_level.api == 'warn'
+          - server_config.log_level.authentication == 'error'
+          - server_config.log_level.database == 'critical'
+          - server_config.log_level.delay_server == 'info'
+          - server_config.log_level.legacy == 'trace'
+          - server_config.log_level.microservice == 'debug'
+          - server_config.log_level.network == 'info'
+          - server_config.log_level.resource == 'warn'
+          - server_config.log_level.rule_engine == 'error'
+          - server_config.log_level.server == 'critical'
+          - server_config.match_hash_policy == 'strict'
+          - server_config.maximum_connections == 1
+          - server_config.negotiation_key == 'TEMPORARY_32byte_negotiation_ke3'
+          - server_config.pam_no_extend is not defined
+          - server_config.pam_password_length is not defined
+          - server_config.pam_password_max_time is not defined
+          - server_config.pam_password_min_time is not defined
+          - server_config.plugin_configuration.database is not defined
+          - server_config.plugin_configuration.network == {}
+          - server_config.plugin_configuration.resource == {}
+          - server_config.plugin_configuration.rule_engines == []
+          - server_config.rule_engine_namespaces | length == 2
+          - server_config.rule_engine_namespaces[0] == 'ns1'
+          - server_config.rule_engine_namespaces[1] == 'ns2'
+          - server_config.schema_validation_base_uri == 'off'
+          - server_config.server_control_plane_encryption_algorithm == 'encrypt'
+          - server_config.server_control_plane_encryption_num_hash_rounds == 17
+          - server_config.server_control_plane_key == 'TEMPORARY_32byte_server_cont_key'
+          - server_config.server_control_plane_port == 1249
+          - server_config.server_control_plane_timeout_milliseconds == 20000
+          - server_config.server_port_range_end == 20399
+          - server_config.server_port_range_start == 10000
+          - server_config.zone_auth_scheme == 'pam_password'
+          - server_config.zone_key == 'zone_key'
+          - server_config.zone_name == 'cyverse'
+          - server_config.zone_port == 1245
+          - server_config.zone_user == 'zoneuser'
 
 
-- name: Verify | default database plugin configuration
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vars/database_plugin_defaults.yml
-    - ../../vars/main.yml
-    - ../../vars/server_config.yml
-    - ../../vars/postgres.yml
-  vars:
-    server_config: >-
-      {{ lookup('ansible.builtin.template', '../../templates/server_config.json.j2') }}
-  tasks:
-    - name: Verify server_config.plugin_configuration.database is correct
-      ansible.builtin.assert:
-        that:
-          - server_config.plugin_configuration.database.postgres.db_host == 'localhost'
-          - server_config.plugin_configuration.database.postgres.db_name == 'ICAT'
-          - server_config.plugin_configuration.database.postgres.db_odbc_driver == 'PostgreSQL'
-          - server_config.plugin_configuration.database.postgres.db_password == 'testpassword'
-          - server_config.plugin_configuration.database.postgres.db_port == 5432
-          - server_config.plugin_configuration.database.postgres.db_username == 'irods'
-
-
-- name: Verify | database plugin configuration
+- name: Verify | database plugin configuration options
   hosts: localhost
   gather_facts: false
   vars_files:
     - vars/database_plugin_opts.yml
     - ../../vars/main.yml
     - ../../vars/server_config.yml
-    - ../../vars/mysql.yml
   vars:
     server_config: >-
       {{ lookup('ansible.builtin.template', '../../templates/server_config.json.j2') }}
@@ -443,6 +411,43 @@
           - server_config.plugin_configuration.database.mysql.db_password == 'secret'
           - server_config.plugin_configuration.database.mysql.db_port == 1
           - server_config.plugin_configuration.database.mysql.db_username == 'irodsuser'
+
+
+- name: Verify | rule engine plugin configuration options
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars/rule_engine_plugin_opts.yml
+    - ../../vars/main.yml
+    - ../../vars/server_config.yml
+  vars:
+    server_config: >-
+      {{ lookup('ansible.builtin.template', '../../templates/server_config.json.j2') }}
+  tasks:
+    - name: Verify server_config.plugin_configuration.rule_engines is correct
+      ansible.builtin.assert:
+        that:
+          - server_config.plugin_configuration.rule_engines | length == 2
+          - server_config.plugin_configuration.rule_engines[0].instance_name == 'irods_rule_engine_plugin-irods_rule_language-instance'
+          - server_config.plugin_configuration.rule_engines[0].plugin_name == 'irods_rule_engine_plugin-irods_rule_language'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set | length == 2
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set[0] == 'dvm'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_data_variable_mapping_set[1] == 'core'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set | length == 3
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set[0] == 'fnm1'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set[1] == 'fnm2'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_function_name_mapping_set[2] == 'core'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set | length == 2
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set[0] == 'r'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.re_rulebase_set[1] == 'core'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps | length == 3
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps[0] == 'ac[^ ]*'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps[1] == 'msi[^ ]*'
+          - server_config.plugin_configuration.rule_engines[0].plugin_specific_configuration.regexes_for_supported_peps[2] == '[^ ]*pep_[^ ]*_(pre|post|except|finally)'
+          - server_config.plugin_configuration.rule_engines[0].shared_memory_instance == 'irods_rule_language_rule_engine'
+          - server_config.plugin_configuration.rule_engines[1].instance_name == 'irods_rule_engine_plugin-cpp_default_policy-instance'
+          - server_config.plugin_configuration.rule_engines[1].plugin_name == 'irods_rule_engine_plugin-cpp_default_policy'
+          - server_config.plugin_configuration.rule_engines[1].plugin_specific_configuration == {}
 
 
 - name: Verify | custom system account name
@@ -505,7 +510,6 @@
       ansible.builtin.assert:
         that:
           - server_config.advanced_settings.default_number_of_transfer_threads == 0
-          - server_config.pam_password_length == 0
           - server_config.server_control_plane_encryption_num_hash_rounds == 0
 
 
@@ -516,9 +520,6 @@
     - ../../vars/main.yml
     - ../../vars/irods_environment_server.yml
   vars:
-    host_access_control_config: >-
-      {{ lookup('ansible.builtin.template', '../../templates/host_access_control_config.json.j2') }}
-    hosts_config: "{{ lookup('ansible.builtin.template', '../../templates/hosts_config.json.j2') }}"
     irods_environment: >-
       {{ lookup('ansible.builtin.template', '../../templates/irods_environment.json.j2') }}
     server_config: >-
@@ -529,14 +530,13 @@
     - name: Verify contents
       ansible.builtin.assert:
         that:
+          - setup_configuration.admin_password == 'rods'
+          - setup_configuration.default_resource_directory is not defined
+          - setup_configuration.default_resource_name == 'demoResc'
           - setup_configuration.host_system_information.service_account_user_name == 'irods'
           - setup_configuration.host_system_information.service_account_group_name == 'irods'
           - setup_configuration.server_config == server_config
-          - setup_configuration.hosts_config == hosts_config
-          - setup_configuration.host_access_control_config == host_access_control_config
           - setup_configuration.service_account_environment == irods_environment
-          - setup_configuration.admin_password == 'rods'
-          - setup_configuration.default_resource_directory == None
 
 
 - name: Verify | setup_configuration customization

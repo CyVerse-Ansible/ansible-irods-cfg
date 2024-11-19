@@ -1,44 +1,28 @@
 {% import 'server_config_macros.j2' as sc with context %}
 {
     "advanced_settings": {{ sc.advanced_settings() | string | indent }},
-    "catalog_provider_hosts": {{
-        sc.mk_catalog_provider_hosts(_catalog_provider_hosts) | string | indent }},
+    "catalog_provider_hosts": {{ sc.mk_string_list(_catalog_provider_hosts) | string | indent }},
     "catalog_service_role": "{{ _catalog_service_role }}",
+    "client_api_allowlist_policy": "{{ _client_api_allowlist_policy }}",
+    "controlled_user_connection_list": {{ sc.controlled_user_connection_list() | string | indent }},
     "default_dir_mode": "{{ _default_dir_mode }}",
     "default_file_mode": "{{ _default_file_mode }}",
     "default_hash_scheme": "{{ _default_hash_scheme }}",
-{% if _default_resource_directory %}
-    "default_resource_directory": "{{ _default_resource_directory }}",
-{% endif %}
-{% if _default_resource_name %}
-    "default_resource_name": "{{ _default_resource_name }}",
-{% else %}
-    "default_resource_name": null,
-{% endif %}
     "environment_variables": {{ sc.environment_variables() | string | indent }},
     "federation": {{ sc.federation() | string | indent }},
-{% if _kerberos_name %}
-    "kerberos_name": "{{ _kerberos_name }}",
-{% endif %}
+    "host_access_control": {{ sc.host_access_control() | string | indent }},
+    "host_resolution": {{ sc.host_resolution() | string | indent }},
+    "log_level": {{ sc.log_level() | string | indent }},
     "match_hash_policy": "{{ _match_hash_policy }}",
+{% if _maximum_connections %}
+    "maximum_connections": {{ _maximum_connections }},
+{% endif %}
     "negotiation_key": "{{ _negotiation_key }}",
-{% if _pam_no_extend %}
-    "pam_no_extend": {{ _pam_no_extend }},
-{% endif %}
-{% if _pam_password_length %}
-    "pam_password_length": {{ _pam_password_length }},
-{% endif %}
-{% if _pam_password_max_time %}
-    "pam_password_max_time": {{ _pam_password_max_time }},
-{% endif %}
-{% if _pam_password_min_time %}
-    "pam_password_min_time": {{ _pam_password_min_time }},
-{% endif %}
     "plugin_configuration": {{ sc.plugin_configuration() | string | indent }},
-    "rule_engine_namespaces": [ "" ],
+    "rule_engine_namespaces": {{ sc.mk_string_list(_rule_engine_namespaces) | string | indent }},
     "schema_name": "server_config",
     "schema_validation_base_uri": "{{ _schema_validation_base_uri }}",
-    "schema_version": "v3",
+    "schema_version": "v4",
     "server_control_plane_encryption_algorithm": "{{
         _server_control_plane_encryption_algorithm }}",
     "server_control_plane_encryption_num_hash_rounds": {{
@@ -48,7 +32,6 @@
     "server_control_plane_timeout_milliseconds": {{ _server_control_plane_timeout }},
     "server_port_range_end": {{ _server_port_range_end }},
     "server_port_range_start": {{ _server_port_range_start }},
-    "xmsg_port": {{ _xmsg_port }},
     "zone_auth_scheme": "{{ _zone_auth_scheme }}",
     "zone_key": "{{ _zone_key }}",
     "zone_name": "{{ _zone_name }}",

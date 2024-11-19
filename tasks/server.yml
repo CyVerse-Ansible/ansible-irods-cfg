@@ -1,10 +1,4 @@
 ---
-- name: Server | generate host_access_control_config.json
-  ansible.builtin.import_tasks: host_access_control_config.yml
-
-- name: Server | generate hosts_config.json
-  ansible.builtin.import_tasks: hosts_config.yml
-
 - name: Server | generate server version of irods_environment.json
   ansible.builtin.include_tasks: irods_environment.yml
   vars:

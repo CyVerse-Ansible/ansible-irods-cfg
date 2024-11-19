@@ -1,7 +1,7 @@
 ---
 - name: IRODS environment | load variable values
-  ansible.builtin.include_vars: >-
-    {{ 'irods_environment_server.yml' if _for_server | bool else 'irods_environment_client.yml' }}
+  when: _for_server | bool
+  ansible.builtin.include_vars: 'irods_environment_server.yml'
 
 - name: IRODS environment | validate if required
   when: _validate | bool
@@ -21,9 +21,7 @@
           - _client_encryption_key_size|int >= 0
           - _client_encryption_num_hash_rounds|int >= 0
           - _client_encryption_salt_size|int >= 0
-          - _cwd is match('^/..*')
-          - _home is match('/..*')
-          - not _log_level or (_log_level|int >= 1 and _log_level|int <= 10)
+          - not _client_log_level or (_client_log_level|int >= 1 and _client_log_level|int <= 10)
           - _match_hash_policy in ['compatible', 'strict']
           - _server_control_plane_encryption_algorithm != ''
           - _server_control_plane_encryption_num_hash_rounds|int >= 0
@@ -33,12 +31,8 @@
             and _server_control_plane_port|int != _zone_port|int
           - not _ssl_verify_server or _ssl_verify_server in ['cert', 'hostname', 'none']
           - >
-            not _client_xmsg_port
-            or (
-              _client_xmsg_port|int >= 1 and _client_xmsg_port|int <= 65535
-              and _client_xmsg_port|int != _zone_port|int
-              and _client_xmsg_port|int != _server_control_plane_port|int )
-          - not _zone_auth_scheme or _zone_auth_scheme in ['gsi', 'krb', 'native', 'pam']
+            not _client_authentication_scheme
+            or _client_authentication_scheme in ['gsi', 'krb', 'native', 'pam']
 
 - name: IRODS environment | generate file
   ansible.builtin.include_tasks: _cfg_template.yml

@@ -1,17 +1,21 @@
 ---
-- import_playbook: ../_shared/prepare.yml
+- name: Base | prepare
+  ansible.builtin.import_playbook: ../_shared/prepare.yml
 
 
-- name: prepare
+- name: Prepare
   hosts: all
-  collections:
-    - ansible.builtin
   tasks:
-    - name: download client env schema
-      get_url:
-        url: https://schemas.irods.org/configuration/v3/client_environment.json
-        dest: /var/lib/irods/
+    - name: Create irods user
+      ansible.builtin.user:
+        name: irods
+
+    - name: Download client env schema
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/irods/irods/refs/heads/main/schemas/configuration/v4/client_environment.json.in
+        dest: /
+        mode: u+r
         timeout: 120
       register: download
-      until: download is not failed 
+      until: download is not failed
       retries: 10

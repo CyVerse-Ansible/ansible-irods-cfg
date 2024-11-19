@@ -6,12 +6,12 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: centos
+  - name: centos.localdomain
     image: centos-archive
     pre_build_image: false
     dockerfile: ../_shared/centos.dockerfile
     hostname: centos.localdomain
-  - name: ubuntu
+  - name: ubuntu.localdomain
     image: ubuntu:bionic
     hostname: ubuntu.localdomain
 provisioner:
@@ -21,17 +21,18 @@ provisioner:
       all:
         irods_cfg_validate: true
     host_vars:
-      centos:
+      centos.localdomain:
         ansible_python_interpreter: /usr/bin/python3
-        irods_cfg_icat:
+        irods_cfg_database:
+          db_odbc_driver: PostgreSQL
           db_password: testpassword
           db_username: irods
         pg_hba_path: /var/lib/pgsql/data/pg_hba.conf
-      ubuntu:
-        irods_cfg_icat:
+      ubuntu.localdomain:
+        irods_cfg_database:
+          db_odbc_driver: PostgreSQL Unicode
           db_password: testpassword
           db_username: irods
-          odbc_driver: PostgreSQL Unicode
         pg_hba_path: /etc/postgresql/10/main/pg_hba.conf
 verifier:
   name: ansible

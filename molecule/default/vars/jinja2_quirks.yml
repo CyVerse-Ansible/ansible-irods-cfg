@@ -4,5 +4,4 @@ irods_cfg_client_encryption_num_hash_rounds: 0
 irods_cfg_client_encryption_salt_size: 0
 irods_cfg_client_server_negotiation: 'off'
 irods_cfg_default_number_of_transfer_threads: 0
-irods_cfg_pam_password_length: 0
 irods_cfg_server_control_plane_encryption_num_hash_rounds: 0

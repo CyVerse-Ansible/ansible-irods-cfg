@@ -3,23 +3,17 @@
   ansible.builtin.include_vars: server_config.yml
 
 - name: Server config | validate ICAT vars if requested
-  when: _icat is mapping
-  block:
-    - name: Server config | validate database params
-      when: _validate | bool
-      ansible.builtin.assert:
-        that:
-          - _icat.catalog_database_type in ('mysql', 'oracle', 'postgres')
-          - _icat.db_port|int >= 1 and _icat.db_port|int <= 65535
-
-    - name: Server config | load vars for chosen database type
-      ansible.builtin.include_vars: "{{ _icat.catalog_database_type }}.yml"
+  when: _validate | bool and _database is mapping
+  ansible.builtin.assert:
+    that:
+      - _database.catalog_database_type in ('mysql', 'oracle', 'postgres')
+      - _database.db_port|int >= 1 and _database.db_port|int <= 65535
 
 - name: Server config | validate rest if requested
   when: _validate | bool
   block:
     - name: Validate federation
-      with_items: "{{ _federation }}"
+      loop: "{{ _federation }}"
       ansible.builtin.assert:
         that:
           - item.zone_name != _zone_name
@@ -33,27 +27,12 @@
           - _default_number_of_transfer_threads|int > 0
           - _default_temporary_password_lifetime|int > 0
           - _maximum_temporary_password_lifetime|int >= _default_temporary_password_lifetime|int
-          - >
-            not _maximum_number_of_concurrent_rule_engine_server_processes
-            or _maximum_number_of_concurrent_rule_engine_server_processes|int >= 1
           - _maximum_size_for_single_buffer|int >= 0
-          - not _rule_engine_server_sleep_time or _rule_engine_server_sleep_time|int >= 0
           - _transfer_buffer_size_for_parallel_transfer|int > 0
           - _transfer_chunk_size_for_parallel_transfer|int > 0
           - _default_hash_scheme in ['MD5', 'SHA256']
-          - not _default_resource_directory or _default_resource_directory is match('/.*')
           - _match_hash_policy in ['compatible', 'strict']
           - _negotiation_key|length == 32
-          - not _pam_no_extend or _pam_no_extend in [true, false]
-          - not _pam_password_length or _pam_password_length|int >= 0
-          - not _pam_password_max_time or _pam_password_max_time|int > 0
-          - >
-            not _pam_password_min_time
-            or ((
-                _pam_password_min_time|int > 0
-                and _pam_password_min_time|int <= _pam_password_max_time|int)
-                  if _pam_password_max_time else
-              _pam_password_min_time|int > 0)
           - _server_control_plane_encryption_num_hash_rounds|int >= 0
           - not _server_control_plane_key or _server_control_plane_key|length == 32
           - >
@@ -67,13 +46,7 @@
           - >
             _server_control_plane_port|int < _server_port_range_start|int
             or _server_control_plane_port|int > _server_port_range_end|int
-          - >
-            _xmsg_port|int >= 1 and _xmsg_port|int <= 65535
-            and _xmsg_port != _server_control_plane_port
-            and (
-              _xmsg_port|int < _server_port_range_start|int
-              or _xmsg_port|int > _server_port_range_end|int)
-          - _zone_auth_scheme in ['', 'gsi', 'krb', 'native', 'pam']
+          - _zone_auth_scheme in ['native', 'pam_password']
           - not _zone_key is match('.*-.*')
           - >
             _zone_port|int >= 1 and _zone_port|int <= 65535
@@ -81,7 +54,6 @@
             and (
               _zone_port|int < _server_port_range_start|int
               or _zone_port|int > _server_port_range_end|int)
-            and _zone_port != _xmsg_port
 
 - name: Server config | generate file
   ansible.builtin.include_tasks: _cfg_template.yml
